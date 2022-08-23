@@ -1,0 +1,126 @@
+5.1. Provinces with an area larger than 15000 square kilometers.
+SELECT *
+FROM Province
+WHERE Area > 15000
+
+5.2. Provinces(*) it neighbored with province have area larger than 15000 square kilometers.
+SELECT A.ProvinceID, ProvinceName, Population, Area, CountryID
+FROM Province A, Neighbor B
+WHERE A.ProvinceID = B.ProvinceID AND (SELECT Area 
+								      FROM Province 
+	                                  WHERE ProvinceID = B.NeighborID) > 15000
+
+5.3. Provinces (*) in the country name = "North".
+SELECT ProvinceID, ProvinceName, Population, Area, A.CountryID
+FROM Country A, Province B
+WHERE A.CountryID = B.CountryID AND CountryName = "North"
+
+5.4. Which Nation bordering the northern provinces.
+SELECT DISTINCT NationID
+FROM Province A, Border B, Country C
+WHERE A.ProvinceID = B.ProvinceID AND A.CountryID = C.CountryID AND C.CountryName = "North"
+
+5.5. Average area of the southern provinces.
+SELECT AVG(Area) as "Area of the southern provinces"
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID AND CountryName = "South"
+
+5.6. Population density of the central country.
+SELECT Sum(Population)/Sum(Area) as "Population density of the central country"
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID AND CountryName = "Central"
+
+5.7. Provinces with the largest population density.
+SELECT ProvinceID, ProvinceName, Sum(Population)/Sum(Area) as "Provinces with the largest population density"
+FROM Province 
+GROUP BY ProvinceID, ProvinceName
+HAVING Sum(Population)/Sum(Area) = (SELECT Max(P)
+									FROM(SELECT ProvinceID, ProvinceName, Sum(Population)/Sum(Area) as "P"
+									FROM Province 
+									GROUP BY ProvinceID, ProvinceName))
+
+5.8. Provinces with the largest area.
+SELECT ProvinceID, ProvinceName, Area
+FROM Province
+GROUP BY ProvinceID, ProvinceName
+HAVING Area = (SELECT Max(Area)
+			  FROM Province)
+
+5.9. In southern country, provinces with the largest area.
+SELECT ProvinceID, ProvinceName, Area
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID AND CountryName = "South"
+GROUP BY ProvinceID, ProvinceName
+HAVING Area = (SELECT Max(Area)
+			  FROM Province A, Country B
+			  WHERE A.CountryID = B.CountryID AND CountryName = "South")
+
+5.10. Provinces that have borders with two or more nations.
+SELECT A.ProvinceID, ProvinceName, Count(NationID) as "Number Nation"
+FROM Province A, Border B
+WHERE A.ProvinceID = B.ProvinceID 
+GROUP BY A.ProvinceID, ProvinceName
+HAVING Count(NationID) >= 2
+
+5.11. List of Countries with the number of its provinces.
+SELECT A.CountryID, CountryName, Count(ProvinceID) as "Number Province"
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID 
+GROUP BY A.CountryID, CountryName
+
+5.12. Provinces with the largest total neighbor.
+SELECT A.ProvinceID, ProvinceName, Count(NeighborID) "The largest total neighbor"
+FROM Province A, Neighbor B
+WHERE A.ProvinceID = B.ProvinceID 
+GROUP BY A.ProvinceID, ProvinceName
+HAVING Count(NeighborID) = (SELECT Max("C")
+							FROM (SELECT A.ProvinceID, ProvinceName, Count(NeighborID) as "C"
+							FROM Province A, Neighbor B
+							WHERE A.ProvinceID = B.ProvinceID 
+							GROUP BY A.ProvinceID, ProvinceName))
+							
+5.13. Provinces that are area larger than area of their neighboring provinces.
+SELECT  A.ProvinceID, ProvinceName, Area
+FROM Province A, Neighbor B
+WHERE A.ProvinceID = B.ProvinceID 
+GROUP BY A.ProvinceID, ProvinceName, Area
+HAVING Area > (SELECT Max(Area)
+			   FROM Province C, Neighbor D
+			   WHERE C.ProvinceID = B.NeighborID)
+											 										  
+5.14. For each country, list the provinces with largest area.
+SELECT A.CountryID, CountryName, ProvinceID, ProvinceName, Area 
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID AND Area = (SELECT MAX(Area)
+											FROM Province
+											WHERE CountryID = A.CountryID)
+
+5.15. For each country, list the provinces with population larger than the average population of that country.
+SELECT A.CountryID, CountryName, ProvinceID, ProvinceName, Area
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID AND Area > (SELECT Avg(Area)
+											FROM Province 
+											WHERE CountryID = A.CountryID)
+											
+
+5.16. Countries with the largest total area.
+SELECT A.CountryID, CountryName, Sum(Area) as "The largest total area"
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID
+GROUP BY A.CountryID, CountryName
+HAVING Sum(Area) = (SELECT Max("A")
+					  FROM (SELECT A.CountryID, CountryName, Sum(Area) as "A"
+					  FROM Province A, Country B
+                      WHERE A.CountryID = B.CountryID
+                      GROUP BY A.CountryID, CountryName))
+
+5.17. Countries with the largest total population
+SELECT A.CountryID, CountryName, Sum(Population) as "The largest total population"
+FROM Province A, Country B
+WHERE A.CountryID = B.CountryID
+GROUP BY A.CountryID, CountryName
+HAVING Sum(Population) = (SELECT Max("P")
+					  FROM (SELECT A.CountryID, CountryName, Sum(Population) as "P"
+					  FROM Province A, Country B
+                      WHERE A.CountryID = B.CountryID
+                      GROUP BY A.CountryID, CountryName))
