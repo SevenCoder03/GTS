@@ -28,8 +28,8 @@ Backup Exercise
 </br> lệnh commit file và thêm ghi chú
 </br> **$ git remote add origin https://github.com/SevenCoder3008/GTS.git**
 </br> cái này cũng hổng biết để chi nữa :v
-</br> **$ git push origin master**
-</br> **$ git push -u origin master**
-</br> **$ git push -f origin master**
+</br> **$ git push origin main**
+</br> **$ git push -u origin main**
+</br> **$ git push -f origin main**
 </br> lần lượt chọn 3 cho đến khi oke 
 </br> Cre: https://github.com/realTranQuocBao
